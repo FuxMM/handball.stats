@@ -72,27 +72,29 @@ th { background: #f0f0f0; }
 </head>
 <body>
 <main id="setup">
-<h1>Willkommen!</h1>
-<input type="text" id="opponent" placeholder="Gegner eingeben">
-<select id="teamSelect">
-    <option value="D2">D2</option>
-    <option value="mE">mE</option>
-</select>
-<section id="player-selection">
-    <div class="column" id="col1"></div>
-    <div class="column" id="col2"></div>
-</section>
-<div class="add-player-container">
-    <input type="text" id="newPlayerName" placeholder="Spielername eingeben">
-    <select id="newPlayerCategory">
-        <option value="Rückraum">Rückraum</option>
-        <option value="Außen">Außen</option>
-        <option value="Kreis">Kreis</option>
-        <option value="Torhüter">Torhüter</option>
+    <!-- Logo oben -->
+    <img src="logo.png" alt="Füchse Logo" style="display:block;margin:0 auto 20px;width:120px;">
+    <h1>Willkommen!</h1>
+    <input type="text" id="opponent" placeholder="Gegner eingeben">
+    <select id="teamSelect">
+        <option value="D2">D2</option>
+        <option value="mE">mE</option>
     </select>
-    <button type="button" id="addPlayerBtn">+</button>
-</div>
-<button class="start-btn" id="startBtn">Start</button>
+    <section id="player-selection">
+        <div class="column" id="col1"></div>
+        <div class="column" id="col2"></div>
+    </section>
+    <div class="add-player-container">
+        <input type="text" id="newPlayerName" placeholder="Spielername eingeben">
+        <select id="newPlayerCategory">
+            <option value="Rückraum">Rückraum</option>
+            <option value="Außen">Außen</option>
+            <option value="Kreis">Kreis</option>
+            <option value="Torhüter">Torhüter</option>
+        </select>
+        <button type="button" id="addPlayerBtn">+</button>
+    </div>
+    <button class="start-btn" id="startBtn">Start</button>
 </main>
 
 <h1 id="headline" class="hidden"></h1>
@@ -126,6 +128,7 @@ th { background: #f0f0f0; }
 
     let currentOpponent = "";
 
+    // Teams ersetzt
     const teams = {
         D2: [
             "Leander Olges","Gwyn Ott", // Torhüter
@@ -185,6 +188,8 @@ th { background: #f0f0f0; }
     let pressTimer, longPressActive, activeTouch;
 
     window.addEventListener("load", () => {
+        document.styleSheets[0].cssRules[1].style.backgroundImage = `url('logo.png?cb=${cb}')`;
+        document.styleSheets[0].cssRules[2].style.backgroundImage = `url('logo.png?cb=${cb}')`;
         renderPlayerCheckboxes();
     });
 
@@ -231,9 +236,89 @@ th { background: #f0f0f0; }
         startGame(opponent, selected.map(cb => parseInt(cb.value)));
     }
 
-    // Restlicher Code unverändert (startGame, updateTables, Exportfunktionen)
-    startBtn.addEventListener("click", validateAndStart);
-})();
-</script>
-</body>
-</html>
+    function startGame(opponent, selectedPlayers) {
+        document.getElementById("headline").innerText = `Statistik vs ${opponent}`;
+        document.getElementById("setup").classList.add("hidden");
+        document.getElementById("headline").classList.remove("hidden");
+        document.getElementById("playerExport").classList.remove("hidden");
+        document.getElementById("teamExport").classList.remove("hidden");
+        const playersDiv = document.getElementById("players");
+        playersDiv.innerHTML = "";
+
+        selectedPlayers.forEach(num => {
+            playersData[num] = {};
+            [...actionsPositive, ...actionsNegative].forEach(a => playersData[num][a.key] = 0);
+            const card = document.createElement("div");
+            card.className = "player-card";
+            const nameDiv = document.createElement("div");
+            nameDiv.className = "player-name"; nameDiv.textContent = playerNames[num - 1];
+            card.appendChild(nameDiv);
+
+            [...actionsPositive, ...actionsNegative].forEach((a, idx) => {
+                const btn = document.createElement("button");
+                btn.className = `btn ${idx < actionsPositive.length ? "positive" : "negative"}`;
+                if (a.key.startsWith("TF") && idx >= actionsPositive.length) btn.classList.add("full-width");
+                btn.textContent = `${a.label} (0)`;
+
+                const startPress = () => {
+                    longPressActive = false;
+                    pressTimer = setTimeout(() => {
+                        playersData[num][a.key] = Math.max(0, playersData[num][a.key] - 1);
+                        btn.textContent = `${a.label} (${playersData[num][a.key]})`;
+                        updateTables();
+                        longPressActive = true;
+                    }, 500);
+                };
+                const endPress = () => {
+                    clearTimeout(pressTimer);
+                    if (!longPressActive) {
+                        playersData[num][a.key]++;
+                        btn.textContent = `${a.label} (${playersData[num][a.key]})`;
+                        updateTables();
+                    }
+                };
+                btn.addEventListener("mousedown", e => { if (!activeTouch) startPress(); });
+                btn.addEventListener("mouseup", e => { if (!activeTouch) endPress(); });
+                btn.addEventListener("mouseleave", () => clearTimeout(pressTimer));
+                btn.addEventListener("touchstart", e => { activeTouch = true; startPress(); e.preventDefault(); });
+                btn.addEventListener("touchend", e => { endPress(); setTimeout(() => activeTouch = false, 300); e.preventDefault(); });
+                btn.addEventListener("touchcancel", () => clearTimeout(pressTimer));
+
+                card.appendChild(btn);
+                if (idx === actionsPositive.length - 1) {
+                    const sep = document.createElement("div");
+                    sep.style.borderBottom = "3px solid black";
+                    sep.style.margin = "5px 0";
+                    card.appendChild(sep);
+                }
+            });
+            playersDiv.appendChild(card);
+        });
+        updateTables();
+    }
+
+    function updateTables() {
+        const buildTable = (id, header1, rows) => {
+            let extraHeaders = id === "teamTable" ? "<th>TW</th>" : "";
+            let headerRow = `<tr><th>${header1}</th>` +
+                actionsPositive.map(a => `<th>${a.label}</th>`).join("") +
+                actionsNegative.map((a,i) => `<th class="${i===0 ? "thick-separator" : ""}">${a.label}</th>`).join("") +
+                `<th>WQ</th><th>WQ inkl. TF</th>` + extraHeaders + `</tr>`;
+            return `<table id="${id}">${headerRow}${rows}</table>`;
+        };
+
+        // Spielerstatistik
+        let playerRows = "";
+        let lastCategory = null;
+        Object.keys(playersData).forEach(num => {
+            const cat = playerCategories[num-1];
+            if (lastCategory && lastCategory !== cat) {
+                playerRows += `<tr><td colspan="${actionsPositive.length + actionsNegative.length + 2 + 1}"></td></tr>`;
+            }
+            lastCategory = cat;
+
+            let posSum = actionsPositive.reduce((s,a)=>s+playersData[num][a.key],0);
+            let negSumExTF = actionsNegative.filter(a=>a.key!=="TF_neg").reduce((s,a)=>s+playersData[num][a.key],0);
+            let negSum = actionsNegative.reduce((s,a)=>s+playersData[num][a.key],0);
+
+            let wq = posSum+negSumExTF>0 ? (posSum/(posSum
