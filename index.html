@@ -3,31 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Handball Statistik — Kopie</title>
+<title>Handball Statistik</title>
 
-<!-- Cache verhindern -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
 
 <style>
 body { font-family: Arial, sans-serif; margin: 0; background-color: #fff; }
-body::before, body::after {
-    content: ""; position: fixed; top: 50%; transform: translateY(-50%);
+body::before, body::after { content: ""; position: fixed; top: 50%; transform: translateY(-50%);
     width: 70vw; height: 90vh; background-repeat: no-repeat; background-position: center;
-    background-size: contain; opacity: 0.15; filter: blur(0.5px);
-    z-index: -1; pointer-events: none;
-}
-body::before { left: 15%; }
-body::after { right: 15%; }
+    background-size: contain; opacity: 0.15; filter: blur(0.5px); z-index: -1; pointer-events: none; }
+body::before { left: 15%; } body::after { right: 15%; }
 h1, h2 { text-align: center; margin-bottom: 15px; }
 #setup { background: rgba(255, 255, 255, 0.6); padding: 20px; border-radius: 12px;
-    max-width: 500px; margin: 30px auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
+    max-width: 500px; margin: 30px auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
 #opponent, #teamSelect { font-size: 1.1em; padding: 12px; width: 100%; margin-bottom: 20px;
     border: 1px solid #ccc; border-radius: 8px; background-color: rgba(255,255,255,0.85);
-    transition: border-color 0.3s, box-shadow 0.3s; color: black;
-}
+    transition: border-color 0.3s, box-shadow 0.3s; color: black; }
 #opponent:focus, #teamSelect:focus { outline: none; border-color: #009688; box-shadow: 0 0 5px rgba(0,150,136,0.5); }
 #player-selection { display: flex; gap: 10px; flex-wrap: nowrap; justify-content: space-between; }
 #player-selection .column { width: 48%; display: flex; flex-direction: column; gap: 8px; }
@@ -39,11 +32,9 @@ h1, h2 { text-align: center; margin-bottom: 15px; }
 .add-player-container button { padding: 8px 12px; border: none; border-radius: 6px;
     background-color: #009688; color: white; cursor: pointer; font-size: 1em; }
 .add-player-container button:hover { background-color: #00796b; }
-.start-btn {
-    font-size: 1.3em; padding: 12px 15px; background: linear-gradient(90deg, #009688, #26a69a);
+.start-btn { font-size: 1.3em; padding: 12px 15px; background: linear-gradient(90deg, #009688, #26a69a);
     color: white; border: none; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 20px;
-    transition: background 0.3s, transform 0.1s;
-}
+    transition: background 0.3s, transform 0.1s; }
 .start-btn:hover { background: linear-gradient(90deg, #00796b, #26a69a); }
 .start-btn:active { transform: scale(0.98); }
 .player-card { border-radius: 8px; padding: 10px; margin: 10px; flex: 1; min-width: 250px;
@@ -71,6 +62,7 @@ th { background: #f0f0f0; }
 </style>
 </head>
 <body>
+
 <main id="setup">
 <h1>Willkommen!</h1>
 <input type="text" id="opponent" placeholder="Gegner eingeben">
@@ -94,24 +86,28 @@ th { background: #f0f0f0; }
 </div>
 <button class="start-btn" id="startBtn">Start</button>
 </main>
+
 <h1 id="headline" class="hidden"></h1>
 <div id="players" class="grid"></div>
+
 <div class="export-buttons hidden" id="playerExport">
     <button data-export="excel" data-table="playerTable">Export Excel</button>
     <button data-export="pdf" data-table="playerTable">Export PDF</button>
 </div>
 <div id="playerStats"></div>
+
 <div class="export-buttons hidden" id="teamExport">
     <button data-export="excel" data-table="teamTable">Export Excel</button>
     <button data-export="pdf" data-table="teamTable">Export PDF</button>
 </div>
 <div id="teamStats"></div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
 <script>
 (() => {
-    const cb = Date.now();
     const col1 = document.getElementById("col1");
     const col2 = document.getElementById("col2");
     const startBtn = document.getElementById("startBtn");
@@ -120,26 +116,26 @@ th { background: #f0f0f0; }
     const newPlayerNameInput = document.getElementById("newPlayerName");
     const newPlayerCategorySelect = document.getElementById("newPlayerCategory");
     let currentOpponent = "";
+
     const teams = {
-        FuxD2: [
-            "Leander Olges","Gwyn Ott","Clemens Busch","Michel Wendt",
-            "Jonte Lorz","Oskar Kittner","Milo Brückner","Lasse Schwarz",
-            "Emil Knopp","Finn Brauner","Lennard Nehls","Benka Domnauer",
-            "Yunis Celebi","Konstantin Olges"
-        ],
-        FuxmE: [
-            "Emil Pinske","Arne Reichhart","Benka Domnauer","Richard Dallmann",
-            "Bruno Kascha","Johannes Blümke","Mateo Rodehau","Kelechi Ohiri",
-            "Bennet Klarczyk","Marvin Marks","Mio Ebersbach"
-        ]
+        FuxD2: ["Leander Olges","Gwyn Ott","Clemens Busch","Michel Wendt","Jonte Lorz","Oskar Kittner","Milo Brückner","Lasse Schwarz","Emil Knopp","Finn Brauner","Lennard Nehls","Benka Domnauer","Yunis Celebi","Konstantin Olges"],
+        FuxmE: ["Emil Pinske","Arne Reichhart","Benka Domnauer","Richard Dallmann","Bruno Kascha","Johannes Blümke","Mateo Rodehau","Kelechi Ohiri","Bennet Klarczyk","Marvin Marks","Mio Ebersbach"]
     };
+
     const categories = {
         FuxD2: [...Array(8).fill("Rückraum"), ...Array(3).fill("Außen"), ...Array(2).fill("Kreis"), ...Array(1).fill("Torhüter")],
         FuxmE: [...Array(6).fill("Rückraum"), ...Array(3).fill("Außen"), ...Array(1).fill("Kreis"), ...Array(1).fill("Torhüter")]
     };
+
     let playerNames = [...teams.FuxD2];
     let playerCategories = [...categories.FuxD2];
-})();
-</script>
-</body>
-</html>
+    let playersData = {};
+
+    const actionsPositive = [
+        {key:"KM_pos",label:"KM"},
+        {key:"DBR_pos",label:"DBR"},
+        {key:"AUSSEN_pos",label:"Außen"},
+        {key:"NAH_pos",label:"NAH"},
+        {key:"FERN_pos",label:"FERN"},
+        {key:"TGS
+
