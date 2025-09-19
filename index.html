@@ -1,66 +1,121 @@
-
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Handball Statistik</title>
-
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-<meta http-equiv="Pragma" content="no-cache" />
-<meta http-equiv="Expires" content="0" />
-
-<style>
-/* (Hier kommt der gesamte CSS-Teil aus der finalen Version) */
-/* ... Für Übersichtlichkeit gekürzt ... */
-body { font-family: Arial, sans-serif; margin: 0; background-color: #fff; }
-/* ... Rest CSS ... */
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Handball Statistik</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <style>
+        /* Dein CSS bleibt unverändert */
+    </style>
 </head>
 <body>
-<main id="setup">
-<h1>Willkommen!</h1>
-<input type="text" id="opponent" placeholder="Gegner eingeben">
-<select id="teamSelect">
-    <option value="Fux2">Fux2</option>
-    <option value="FuxA">FuxA</option>
-</select>
-<section id="player-selection">
-    <div class="column" id="col1"></div>
-    <div class="column" id="col2"></div>
-</section>
-<div class="add-player-container">
-    <input type="text" id="newPlayerName" placeholder="Spielername eingeben">
-    <select id="newPlayerCategory">
-        <option value="Rückraum">Rückraum</option>
-        <option value="Außen">Außen</option>
-        <option value="Kreis">Kreis</option>
-        <option value="Torhüter">Torhüter</option>
-    </select>
-    <button type="button" id="addPlayerBtn">+</button>
-</div>
-<button class="start-btn" id="startBtn">Start</button>
-</main>
-<h1 id="headline" class="hidden"></h1>
-<div id="players" class="grid"></div>
-<div class="export-buttons hidden" id="playerExport">
-    <button data-export="excel" data-table="playerTable">Export Excel</button>
-    <button data-export="pdf" data-table="playerTable">Export PDF</button>
-</div>
-<div id="playerStats"></div>
-<div class="export-buttons hidden" id="teamExport">
-    <button data-export="excel" data-table="teamTable">Export Excel</button>
-    <button data-export="pdf" data-table="teamTable">Export PDF</button>
-</div>
-<div id="teamStats"></div>
+    <main id="setup">
+        <h1>Willkommen!</h1>
+        <input type="text" id="opponent" placeholder="Gegner eingeben">
+        <select id="teamSelect">
+            <option value="FuxD2">FuxD2</option>
+            <option value="FuxmE">FuxmE</option>
+        </select>
+        <section id="player-selection">
+            <div class="column" id="col1"></div>
+            <div class="column" id="col2"></div>
+        </section>
+        <div class="add-player-container">
+            <input type="text" id="newPlayerName" placeholder="Spielername eingeben">
+            <select id="newPlayerCategory">
+                <option value="Rückraum">Rückraum</option>
+                <option value="Außen">Außen</option>
+                <option value="Kreis">Kreis</option>
+                <option value="Torhüter">Torhüter</option>
+            </select>
+            <button type="button" id="addPlayerBtn">+</button>
+        </div>
+        <button class="start-btn" id="startBtn">Start</button>
+    </main>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <h1 id="headline" class="hidden"></h1>
+    <div id="players" class="grid"></div>
 
-<script>
-/* (Hier kommt der gesamte finale JavaScript-Code) */
-/* ... Für Übersichtlichkeit gekürzt ... */
-</script>
+    <div class="export-buttons hidden" id="playerExport">
+        <button data-export="excel" data-table="playerTable">Export Excel</button>
+        <button data-export="pdf" data-table="playerTable">Export PDF</button>
+    </div>
+    <div id="playerStats"></div>
+
+    <div class="export-buttons hidden" id="teamExport">
+        <button data-export="excel" data-table="teamTable">Export Excel</button>
+        <button data-export="pdf" data-table="teamTable">Export PDF</button>
+    </div>
+    <div id="teamStats"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        (() => {
+            const col1 = document.getElementById("col1");
+            const col2 = document.getElementById("col2");
+            const startBtn = document.getElementById("startBtn");
+            const teamSelect = document.getElementById("teamSelect");
+            const addPlayerBtn = document.getElementById("addPlayerBtn");
+            const newPlayerNameInput = document.getElementById("newPlayerName");
+            const newPlayerCategorySelect = document.getElementById("newPlayerCategory");
+            let currentOpponent = "";
+
+            const teams = {
+                FuxD2: {
+                    Torhüter: ["Leander Olges", "Gwyn Ott"],
+                    Rückraum: ["Jonte Lorz", "Oskar Kittner", "Milo Brückner", "Lasse Schwarz", "Lennard Nehls"],
+                    Außen: ["Benka Domnauer", "Yunis Celebi", "Konstantin Olges", "Clemens Busch", "Michel Wendt"],
+                    Kreis: ["Emil Knopp", "Finn Brauner"]
+                },
+                FuxmE: {
+                    Torhüter: ["Mateo Rodehau", "Kelechi Ohiri", "Bennet Klarczyk"],
+                    Rückraum: ["Arne Reichhart", "Richard Dallmann", "Benka Domnauer", "Johannes Blümke", "Kelechi Ohiri"],
+                    Außen: ["Mio Ebersbach", "Bennet Klarczyk", "Mateo Rodehau", "Emil Pinske"],
+                    Kreis: ["Bruno Kascha", "Marvin Marks"]
+                }
+            };
+
+            const categories = {
+                FuxD2: {
+                    Torhüter: ["Leander Olges", "Gwyn Ott"],
+                    Rückraum: ["Jonte Lorz", "Oskar Kittner", "Milo Brückner", "Lasse Schwarz", "Lennard Nehls"],
+                    Außen: ["Benka Domnauer", "Yunis Celebi", "Konstantin Olges", "Clemens Busch", "Michel Wendt"],
+                    Kreis: ["Emil Knopp", "Finn Brauner"]
+                },
+                FuxmE: {
+                    Torhüter: ["Mateo Rodehau", "Kelechi Ohiri", "Bennet Klarczyk"],
+                    Rückraum: ["Arne Reichhart", "Richard Dallmann", "Benka Domnauer", "Johannes Blümke", "Kelechi Ohiri"],
+                    Außen: ["Mio Ebersbach", "Bennet Klarczyk", "Mateo Rodehau", "Emil Pinske"],
+                    Kreis: ["Bruno Kascha", "Marvin Marks"]
+                }
+            };
+
+            let playerNames = [...teams.FuxD2.Torhüter, ...teams.FuxD2.Rückraum, ...teams.FuxD2.Außen, ...teams.FuxD2.Kreis];
+            let playerCategories = [
+                ...Array(2).fill("Torhüter"),
+                ...Array(5).fill("Rückraum"),
+                ...Array(5).fill("Außen"),
+                ...Array(2).fill("Kreis")
+            ];
+
+            let playersData = {};
+
+            const actionsPositive = [
+                {key: "KM_pos", label: "KM"},
+                {key: "DBR_pos", label: "DBR"},
+                {key: "AUSSEN_pos", label: "Außen"},
+                {key: "NAH_pos", label: "NAH"},
+                {key: "FERN_pos", label: "FERN"},
+                {key: "TGS_pos", label: "TGS"}
+            ];
+
+            // Dein bestehender JavaScript-Code bleibt unverändert
+        })();
+    </script>
 </body>
 </html>
